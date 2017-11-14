@@ -5,7 +5,7 @@ function Get-SqlVersion {
             This function could be used in a pipeline to filter a list of SQL Server instances by version and OS.
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess=$True,ConfirmImpact='High')]
     param(
         [Parameter(Mandatory=$True,ValueFromPipeline=$True)]
         [Alias('Instance')]
@@ -43,6 +43,9 @@ function Get-SqlVersion {
     }
 
     Begin {
+        # bind the dynamic parameter
+        $OS = $PsBoundParameters['OS']
+
         Write-Host "Getting SQL Server Version..."
         
         # Set the numeric version major
@@ -60,7 +63,7 @@ function Get-SqlVersion {
         SELECT  @@SERVERNAME As ser,
                 SERVERPROPERTY('productversion') AS ver,
                 CASE WHEN @@VERSION LIKE '%Windows%' THEN 'Windows' ELSE 'Linux' END AS platform
-        WHERE   CAST(SERVERPROPERTY('productmajorversion') AS VARCHAR(2)) LIKE '%$($CurrentMajor)%'
+        WHERE   CAST(SERVERPROPERTY('productmajorversion') AS VARCHAR(2)) LIKE '$($CurrentMajor)%'
                 AND @@VERSION LIKE '%$($OS)%'
 "@
         Write-Verbose "Query:`n$($VersionQuery)"

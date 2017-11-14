@@ -13,7 +13,7 @@ function Get-SqlVersion {
        $Curr | Add-Member -MemberType NoteProperty -Name 'Server' -Value $Version.ser
        $Curr | Add-Member -MemberType NoteProperty -Name 'Version' -Value $Version.ver
        
-       Write-Out $Curr
+       Write-Output $Curr
     }
     catch {
         Write-Host "failed - $($_.Exception.Message)" -ForegroundColor Red
