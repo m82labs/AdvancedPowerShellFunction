@@ -7,15 +7,16 @@ function Get-SqlVersion {
 
     [CmdletBinding(SupportsShouldProcess=$True,ConfirmImpact='High')]
     param(
-        [Parameter(Mandatory=$True,ValueFromPipeline=$True)]
+        [Parameter(Mandatory=$True,ValueFromPipelineByPropertyName)]
         [Alias('Instance')]
         [string]$SqlInstance,
+        [Parameter(Mandatory=$True,ValueFromPipelineByPropertyName)]
         [ValidateSet(2012,2014,2016,2017,2018)]
         [int]$CurrentMajorVersion
     )
 
     DynamicParam {
-        if ($CurrentMajorVersion -gt 2014) {
+        if ($CurrentMajorVersion -ge 2017) {
             $ValSet = @('Windows','Linux')
         } else {
             $ValSet = @('Windows')
