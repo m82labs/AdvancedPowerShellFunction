@@ -11,7 +11,7 @@ function Get-SqlVersion {
         [Alias('Instance')]
         [string]$SqlInstance,
         [Parameter(Mandatory=$True,ValueFromPipelineByPropertyName)]
-        [ValidateSet(2012,2014,2016,2017,2018)]
+        [ValidateSet(2012,2014,2016,2017,2018)] 
         [int]$CurrentMajorVersion
     )
 
