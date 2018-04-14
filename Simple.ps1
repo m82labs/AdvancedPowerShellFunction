@@ -4,16 +4,14 @@ function Get-SqlVersion {
     )
     Write-Host "Getting SQL Server Version: " -NoNewLine
     try {
-        $Version = Invoke-SqlCmd -Query "SELECT @@SERVERNAME AS ser, SERVERPROPERTY('productversion') AS ver" `
+        $Version = Invoke-SqlCmd -Query "SELECT @@SERVERNAME AS Server, SERVERPROPERTY('productversion') AS Version" `
                                  -ServerInstance $Instance `
-                                 -ErrorAction Stop
+                                 -ErrorAction Stop `
+                                 -Username sa `
+                                 -Password myStrongPassword01
        Write-Host "done" -ForegroundColor Green
 
-       $Curr = New-Object -TypeName psobject
-       $Curr | Add-Member -MemberType NoteProperty -Name 'Server' -Value $Version.ser
-       $Curr | Add-Member -MemberType NoteProperty -Name 'Version' -Value $Version.ver
-       
-       Write-Output $Curr
+       $Version
     }
     catch {
         Write-Host "failed - $($_.Exception.Message)" -ForegroundColor Red

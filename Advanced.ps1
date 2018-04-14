@@ -56,14 +56,15 @@ function Get-SqlVersion {
                 2014 { $CurrentMajor = 12 }
                 2016 { $CurrentMajor = 13 }
                 2017 { $CurrentMajor = 14 }
+                2018     { $CurrentMajor = 15 }
             }
         }
 
         # Set a query up
         [string]$VersionQuery = @"
-        SELECT  @@SERVERNAME As ser,
-                SERVERPROPERTY('productversion') AS ver,
-                CASE WHEN @@VERSION LIKE '%Windows%' THEN 'Windows' ELSE 'Linux' END AS platform
+        SELECT  @@SERVERNAME As Server,
+                SERVERPROPERTY('productversion') AS Version,
+                CASE WHEN @@VERSION LIKE '%Windows%' THEN 'Windows' ELSE 'Linux' END AS Platform
         WHERE   CAST(SERVERPROPERTY('productmajorversion') AS VARCHAR(2)) LIKE '$($CurrentMajor)%'
                 AND @@VERSION LIKE '%$($OS)%'
 "@
@@ -73,17 +74,8 @@ function Get-SqlVersion {
 
     Process {
         try {
-            $Version = Invoke-SqlCmd -Query $VersionQuery -ServerInstance $SqlInstance -ErrorAction Stop
-
-            if ( $Version ) {
-                $Curr = New-Object -TypeName psobject
-                $Curr | Add-Member -MemberType NoteProperty -Name 'Server' -Value $Version.ser
-                $Curr | Add-Member -MemberType NoteProperty -Name 'Version' -Value $Version.ver
-                $Curr | Add-Member -MemberType NoteProperty -Name 'Platform' -Value $Version.platform
-
-                # Return objects as they are created
-                Write-Output $Curr
-            }
+            $Version = Invoke-SqlCmd -Query $VersionQuery -ServerInstance $SqlInstance -Username sa -Password myStrongPassword01 -ErrorAction Stop
+            $Version
         }
         catch {
             Write-Host "$($SqlInstance): failed - $($_.Exception.Message)" -ForegroundColor Red

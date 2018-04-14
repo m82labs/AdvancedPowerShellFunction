@@ -28,7 +28,7 @@ v1.1   - Chad Miller - Fixed Issue with connection closing
 v1.2   - Chad Miller - Added inputfile, SQL auth support, connectiontimeout and output message handling. Updated help documentation 
 v1.3   - Chad Miller - Added As parameter to control DataSet, DataTable or array of DataRow Output type 
 #> 
-function Invoke-Sqlcmd
+function Invoke-Sqlcmd2
 { 
     [CmdletBinding()] 
     param( 
