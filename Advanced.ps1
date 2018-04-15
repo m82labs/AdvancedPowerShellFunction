@@ -7,32 +7,38 @@ function Get-SqlVersion {
 
     [CmdletBinding(SupportsShouldProcess=$True,ConfirmImpact='High')]
     param(
-        [Parameter(Mandatory=$True,ValueFromPipelineByPropertyName)]
+        [Parameter(Mandatory=$True,ValueFromPipeline=$True)]
         [Alias('Instance')]
         [string]$SqlInstance,
-        [Parameter(Mandatory=$True,ValueFromPipelineByPropertyName)]
+        [Parameter(Mandatory=$True)]
         [ValidateSet(2012,2014,2016,2017,2018)] 
         [int]$CurrentMajorVersion
     )
 
     DynamicParam {
-        if ($CurrentMajorVersion -ge 2017) {
-            $ValSet = @('Windows','Linux')
-        } else {
-            $ValSet = @('Windows')
+        if ( $CurrentMajorVersion ) {
+            if ($CurrentMajorVersion -ge 2017) {
+                $ValSet = @('Windows','Linux')
+            } else {
+                $ValSet = @('Windows')
+            }
         }
          
+        # Create an attribute collection for our parameter
+        $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+        
         #Create a new ParameterAttribute Object
         $OSAttribute = New-Object System.Management.Automation.ParameterAttribute
         $OSAttribute.HelpMessage = "Please specify an OS to filter by:"
         
-        # Create a validation set
-        $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($ValSet)            
+        # Create a validation set and add it to the collection
+        if ( $CurrentMajorVersion ) {
+            $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($ValSet)
+            $AttributeCollection.Add($ValidateSetAttribute)
+        }
 
-        # Create an attribute collection for our parameter
-        $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+        # Add attributes to collection
         $AttributeCollection.Add($OSAttribute)
-        $AttributeCollection.Add($ValidateSetAttribute)
 
         # Create the parameter
         $OSParam = New-Object System.Management.Automation.RuntimeDefinedParameter('OS', [string], $AttributeCollection)
@@ -64,7 +70,10 @@ function Get-SqlVersion {
         [string]$VersionQuery = @"
         SELECT  @@SERVERNAME As Server,
                 SERVERPROPERTY('productversion') AS Version,
-                CASE WHEN @@VERSION LIKE '%Windows%' THEN 'Windows' ELSE 'Linux' END AS Platform
+                CASE
+                  WHEN @@VERSION LIKE '%Windows%' THEN 'Windows'
+                  ELSE 'Linux'
+                END AS Platform
         WHERE   CAST(SERVERPROPERTY('productmajorversion') AS VARCHAR(2)) LIKE '$($CurrentMajor)%'
                 AND @@VERSION LIKE '%$($OS)%'
 "@
